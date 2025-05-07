@@ -73,30 +73,40 @@ export default function DiceArtPlanner() {
       canvas.width = width
       canvas.height = height
 
-      // Calculate relative blur radius based on the smaller dimension
-      const smallerDimension = Math.min(width, height)
-      const relativeBlurRadius = (blurAmount / 100) * smallerDimension
-
       // First draw the image without blur
       ctx.drawImage(img, 0, 0, width, height)
 
-      // Create a temporary canvas for the blurred version
+      // Create a smaller temporary canvas for the blur operation
       const tempCanvas = document.createElement('canvas')
       const tempCtx = tempCanvas.getContext('2d')!
-      tempCanvas.width = width
-      tempCanvas.height = height
+      
+      // Scale down for the blur operation (max dimension of 1000px)
+      const maxBlurDimension = 1000
+      const scaleDownFactor = Math.min(1, maxBlurDimension / Math.max(width, height))
+      const blurWidth = Math.round(width * scaleDownFactor)
+      const blurHeight = Math.round(height * scaleDownFactor)
+      
+      tempCanvas.width = blurWidth
+      tempCanvas.height = blurHeight
 
-      // Copy the original image to temp canvas and apply blur
-      tempCtx.drawImage(canvas, 0, 0)
+      // Draw at a smaller size for the blur operation
+      tempCtx.drawImage(canvas, 0, 0, width, height, 0, 0, blurWidth, blurHeight)
+
+      // Calculate blur radius relative to the scaled-down size
+      const smallerBlurDimension = Math.min(blurWidth, blurHeight)
+      const relativeBlurRadius = (blurAmount / 100) * smallerBlurDimension * 0.5 // Reduced multiplier for better mobile performance
+
+      // Apply blur on the smaller canvas
       tempCtx.filter = `blur(${relativeBlurRadius}px)`
       tempCtx.drawImage(tempCanvas, 0, 0)
 
-      // Copy the blurred version back to main canvas
+      // Clear and scale back up to the main canvas
       ctx.clearRect(0, 0, width, height)
-      ctx.drawImage(tempCanvas, 0, 0)
+      ctx.drawImage(tempCanvas, 0, 0, blurWidth, blurHeight, 0, 0, width, height)
 
       // Reset the filter
       ctx.filter = "none"
+      tempCtx.filter = "none"
 
       // Calculate cell size based on the smaller dimension to ensure square dice
       const cellSize = Math.min(width / gridSize, height / gridSize)
