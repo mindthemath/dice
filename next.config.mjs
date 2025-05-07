@@ -9,7 +9,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // output: 'export',
+  output: 'export',
   distDir: 'dist',
   // Disable fast refresh in development to prevent constant reloading
   webpack: (config, { dev }) => {

@@ -16,7 +16,6 @@ export default function DiceArtPlanner() {
   const [diceArt, setDiceArt] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [totalDice, setTotalDice] = useState(0)
-  const [actualGridDimensions, setActualGridDimensions] = useState<{ width: number; height: number } | null>(null)
 
   // Thresholds represent the dividing points between dice values (0-1)
   // We need 5 dividers to create 6 regions for dice values 1-6
@@ -85,9 +84,8 @@ export default function DiceArtPlanner() {
       const actualGridWidth = Math.floor(width / cellSize)
       const actualGridHeight = Math.floor(height / cellSize)
 
-      // Update total dice count and dimensions
+      // Update total dice count
       setTotalDice(actualGridWidth * actualGridHeight)
-      setActualGridDimensions({ width: actualGridWidth, height: actualGridHeight })
 
       // Add a small gap between dice (1px in the original scale)
       const gapSize = 1 / 4
@@ -101,12 +99,12 @@ export default function DiceArtPlanner() {
       const outputCtx = outputCanvas.getContext("2d")!
 
       // Make output canvas larger for better visibility
-      const scaleFactor = 6 // Increased from 2 to 6 for higher resolution
+      const scaleFactor = 4 // Increased from 2 to 4 for higher resolution
       outputCanvas.width = actualGridWidth * cellSize * scaleFactor
       outputCanvas.height = actualGridHeight * cellSize * scaleFactor
 
       // Clear output canvas
-      outputCtx.fillStyle = "#666"
+      outputCtx.fillStyle = "#fff"
       outputCtx.fillRect(0, 0, outputCanvas.width, outputCanvas.height)
 
       // Process each cell
@@ -363,16 +361,16 @@ export default function DiceArtPlanner() {
                     <Label htmlFor="grid-size">
                       Grid Size: {gridSize}×{gridSize}
                     </Label>
-                    {totalDice > 0 && actualGridDimensions && (
+                    {totalDice > 0 && (
                       <span className="text-sm text-gray-600">
-                        Total Dice Required: {totalDice} ({actualGridDimensions.width}×{actualGridDimensions.height})
+                        Total Dice Required: {totalDice}
                       </span>
                     )}
                   </div>
                   <Slider
                     id="grid-size"
                     min={5}
-                    max={80}
+                    max={50}
                     step={1}
                     value={[gridSize]}
                     onValueChange={(value) => setGridSize(value[0])}
@@ -409,46 +407,42 @@ export default function DiceArtPlanner() {
                       {thresholds.map((threshold, index) => (
                         <div
                           key={index}
-                          className="absolute top-0 bottom-0 left-0 w-0 cursor-ew-resize touch-none select-none"
+                          className="absolute top-0 bottom-0 w-1 bg-red-500 cursor-ew-resize"
                           style={{ left: `${threshold * 100}%` }}
                           onMouseDown={handleDividerInteractionStart(index)}
                           onTouchStart={handleDividerInteractionStart(index)}
                           aria-label={`Threshold for dice value ${index + 2}`}
-                        >
-                          {/* Centered full height line and knob */}
-                          <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-1 bg-red-500" />
-                          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-red-500 border-2 border-white shadow-md" />
-                        </div>
+                        />
                       ))}
 
-                      {/* Dice value labels */}
-                      <div className="absolute -bottom-6 left-0 text-xs select-none">1</div>
+                      {/* Dice value labels - removed duplicate "1" */}
+                      <div className="absolute -bottom-6 left-0 text-xs">1</div>
                       <div
-                        className="absolute -bottom-6 text-xs select-none"
+                        className="absolute -bottom-6 text-xs"
                         style={{ left: `${(thresholds[1] * 100 + thresholds[0] * 100) / 2}%` }}
                       >
                         2
                       </div>
                       <div
-                        className="absolute -bottom-6 text-xs select-none"
+                        className="absolute -bottom-6 text-xs"
                         style={{ left: `${(thresholds[2] * 100 + thresholds[1] * 100) / 2}%` }}
                       >
                         3
                       </div>
                       <div
-                        className="absolute -bottom-6 text-xs select-none"
+                        className="absolute -bottom-6 text-xs"
                         style={{ left: `${(thresholds[3] * 100 + thresholds[2] * 100) / 2}%` }}
                       >
                         4
                       </div>
                       <div
-                        className="absolute -bottom-6 text-xs select-none"
+                        className="absolute -bottom-6 text-xs"
                         style={{ left: `${(thresholds[4] * 100 + thresholds[3] * 100) / 2}%` }}
                       >
                         5
                       </div>
                       <div
-                        className="absolute -bottom-6 text-xs select-none"
+                        className="absolute -bottom-6 text-xs"
                         style={{ left: `${(100 + thresholds[4] * 100) / 2}%` }}
                       >
                         6
@@ -515,11 +509,6 @@ export default function DiceArtPlanner() {
           You can customize this mapping by dragging the dividers on the gradient.
         </p>
       </div>
-    <footer className="text-center text-lg text-gray-600 mt-8">
-      <p>
-        an application by <a className="underline" href="https://mpilosov.com">mathematicalmichael</a>
-      </p>
-    </footer>
     </main>
   )
 }
