@@ -73,6 +73,10 @@ export default function DiceArtPlanner() {
       canvas.width = width
       canvas.height = height
 
+      // Calculate relative blur radius based on the smaller dimension
+      const smallerDimension = Math.min(width, height)
+      const relativeBlurRadius = (blurAmount / 100) * smallerDimension
+
       // First draw the image without blur
       ctx.drawImage(img, 0, 0, width, height)
 
@@ -84,7 +88,7 @@ export default function DiceArtPlanner() {
 
       // Copy the original image to temp canvas and apply blur
       tempCtx.drawImage(canvas, 0, 0)
-      tempCtx.filter = `blur(${blurAmount}px)`
+      tempCtx.filter = `blur(${relativeBlurRadius}px)`
       tempCtx.drawImage(tempCanvas, 0, 0)
 
       // Copy the blurred version back to main canvas
@@ -397,13 +401,13 @@ export default function DiceArtPlanner() {
 
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <Label htmlFor="blur-amount">Blur Amount: {blurAmount}px</Label>
+                    <Label htmlFor="blur-amount">Blur Amount: {blurAmount}%</Label>
                   </div>
                   <Slider
                     id="blur-amount"
                     min={0}
                     max={100}
-                    step={0.5}
+                    step={1}
                     value={[blurAmount]}
                     onValueChange={(value) => setBlurAmount(value[0])}
                   />
