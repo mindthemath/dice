@@ -16,6 +16,7 @@ export default function DiceArtPlanner() {
   const [diceArt, setDiceArt] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [totalDice, setTotalDice] = useState(0)
+  const [gridDimensions, setGridDimensions] = useState({ width: 0, height: 0 })
 
   // Thresholds represent the dividing points between dice values (0-1)
   // We need 5 dividers to create 6 regions for dice values 1-6
@@ -84,8 +85,9 @@ export default function DiceArtPlanner() {
       const actualGridWidth = Math.floor(width / cellSize)
       const actualGridHeight = Math.floor(height / cellSize)
 
-      // Update total dice count
+      // Update total dice count and grid dimensions
       setTotalDice(actualGridWidth * actualGridHeight)
+      setGridDimensions({ width: actualGridWidth, height: actualGridHeight })
 
       // Add a small gap between dice (1px in the original scale)
       const gapSize = 1 / 4
@@ -99,12 +101,12 @@ export default function DiceArtPlanner() {
       const outputCtx = outputCanvas.getContext("2d")!
 
       // Make output canvas larger for better visibility
-      const scaleFactor = 4 // Increased from 2 to 4 for higher resolution
+      const scaleFactor = 4
       outputCanvas.width = actualGridWidth * cellSize * scaleFactor
       outputCanvas.height = actualGridHeight * cellSize * scaleFactor
 
-      // Clear output canvas
-      outputCtx.fillStyle = "#fff"
+      // Clear output canvas with #666 background
+      outputCtx.fillStyle = "#666"
       outputCtx.fillRect(0, 0, outputCanvas.width, outputCanvas.height)
 
       // Process each cell
@@ -363,14 +365,14 @@ export default function DiceArtPlanner() {
                     </Label>
                     {totalDice > 0 && (
                       <span className="text-sm text-gray-600">
-                        Total Dice Required: {totalDice}
+                        Total Dice: {totalDice} ({gridDimensions.width}×{gridDimensions.height})
                       </span>
                     )}
                   </div>
                   <Slider
                     id="grid-size"
                     min={5}
-                    max={50}
+                    max={100}
                     step={1}
                     value={[gridSize]}
                     onValueChange={(value) => setGridSize(value[0])}
@@ -384,7 +386,7 @@ export default function DiceArtPlanner() {
                   <Slider
                     id="blur-amount"
                     min={0}
-                    max={10}
+                    max={100}
                     step={0.5}
                     value={[blurAmount]}
                     onValueChange={(value) => setBlurAmount(value[0])}
@@ -403,19 +405,27 @@ export default function DiceArtPlanner() {
                       ref={gradientRef}
                       className="relative h-12 w-full rounded-md bg-gradient-to-r from-black to-white"
                     >
-                      {/* Dividers */}
+                      {/* Dividers with knobs for better touch interaction */}
                       {thresholds.map((threshold, index) => (
-                        <div
-                          key={index}
-                          className="absolute top-0 bottom-0 w-1 bg-red-500 cursor-ew-resize"
-                          style={{ left: `${threshold * 100}%` }}
-                          onMouseDown={handleDividerInteractionStart(index)}
-                          onTouchStart={handleDividerInteractionStart(index)}
-                          aria-label={`Threshold for dice value ${index + 2}`}
-                        />
+                        <>
+                          {/* Vertical Divider Line */}
+                          <div
+                            className="absolute top-0 bottom-0 w-1 bg-red-500 -translate-x-1/2 pointer-events-none"
+                            style={{ left: `${threshold * 100}%` }}
+                            aria-hidden="true"
+                          />
+                          {/* Draggable Knob */}
+                          <div
+                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-6 h-6 bg-red-500 rounded-full border-2 border-white shadow-md cursor-grab active:cursor-grabbing touch-none"
+                            style={{ left: `${threshold * 100}%` }}
+                            onMouseDown={handleDividerInteractionStart(index)}
+                            onTouchStart={handleDividerInteractionStart(index)}
+                            aria-label={`Threshold for dice value ${index + 2}`}
+                          />
+                        </>
                       ))}
 
-                      {/* Dice value labels - removed duplicate "1" */}
+                      {/* Dice value labels */}
                       <div className="absolute -bottom-6 left-0 text-xs">1</div>
                       <div
                         className="absolute -bottom-6 text-xs"
@@ -495,7 +505,7 @@ export default function DiceArtPlanner() {
       <div className="mt-8 bg-gray-100 rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-4">How It Works</h2>
         <ol className="list-decimal pl-5 space-y-2">
-          <li>Upload an image using the button on the left</li>
+          <li>Upload an image </li>
           <li>Adjust the grid size to determine how many dice will be used (higher = more detail)</li>
           <li>Adjust the blur amount to smooth out details if needed</li>
           <li>Drag the red dividers on the gradient to customize which brightness levels map to each dice value</li>
@@ -512,4 +522,3 @@ export default function DiceArtPlanner() {
     </main>
   )
 }
-
