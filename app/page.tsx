@@ -73,9 +73,25 @@ export default function DiceArtPlanner() {
       canvas.width = width
       canvas.height = height
 
-      // Draw and apply blur
-      ctx.filter = `blur(${blurAmount}px)`
+      // First draw the image without blur
       ctx.drawImage(img, 0, 0, width, height)
+
+      // Create a temporary canvas for the blurred version
+      const tempCanvas = document.createElement('canvas')
+      const tempCtx = tempCanvas.getContext('2d')!
+      tempCanvas.width = width
+      tempCanvas.height = height
+
+      // Copy the original image to temp canvas and apply blur
+      tempCtx.drawImage(canvas, 0, 0)
+      tempCtx.filter = `blur(${blurAmount}px)`
+      tempCtx.drawImage(tempCanvas, 0, 0)
+
+      // Copy the blurred version back to main canvas
+      ctx.clearRect(0, 0, width, height)
+      ctx.drawImage(tempCanvas, 0, 0)
+
+      // Reset the filter
       ctx.filter = "none"
 
       // Calculate cell size based on the smaller dimension to ensure square dice
